@@ -4,12 +4,12 @@
     <item>
         <shape android:shape="oval" >
             <size
-                android:height="90dp"
-                android:width="90dp" />
+                android:height="60dp"
+                android:width="60dp" />
 
             <stroke
                 android:width="2dp"
-                android:color="#ffc000" />
+                android:color="#4e00ff" />
 
             <solid android:color="#00000000" />
         </shape>
@@ -17,7 +17,7 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/just6" />
+            android:src="@drawable/number1" />
     </item>
 
 </layer-list>

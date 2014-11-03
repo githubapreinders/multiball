@@ -3,29 +3,30 @@ package com.example.multiball;
 import java.util.HashMap;
 
 import android.app.Application;
-import android.app.FragmentManager;
 
 public class MultiBall extends Application
 {
-	static FragmentManager fm;
-	HashMap<Integer, Ball> balls;
-
+	String userinput;
+	
 	@Override
 	public void onCreate()
 	{
 		super.onCreate();
+		this.userinput = "";
 
 	}
 
-	public HashMap<Integer, Ball> getBalls()
+	public String getUserinput()
 	{
-		return balls;
+		return userinput;
 	}
 
-	public void setBalls(HashMap<Integer, Ball> balls)
+	public void setUserinput(String userinput)
 	{
-		this.balls = balls;
+		this.userinput = userinput;
 	}
 	
+
+		
 
 }

@@ -6,10 +6,10 @@ import android.graphics.Canvas;
 public class GameLoopThread extends Thread
 {
 
-	static final long FPS = 20;
+//	static final long FPS = 30;
 	private GameView view;
 	private boolean running = false;
-
+	private static final int UPDATE_RATE = 100;
 	public GameLoopThread(GameView view)
 	{
 		this.view = view;
@@ -24,21 +24,25 @@ public class GameLoopThread extends Thread
 	@Override
 	public void run()
 	{
-		long ticksPS = 1000 /FPS;
-		long starttime;
-		long sleeptime;
 		
 		while (running)
 		{
 			Canvas c = null;
-			starttime = System.currentTimeMillis();
+			long beginTimeMillis, timeTakenMillis, timeLeftMillis;
+            beginTimeMillis = System.currentTimeMillis();
+
 			try
 			{
+				view.updateBalls2();
 				c = view.getHolder().lockCanvas();
 				synchronized (view.getHolder())
 				{
 					view.onDraw(c);
 				}
+				timeTakenMillis = System.currentTimeMillis() - beginTimeMillis;
+	               timeLeftMillis = 1000L / UPDATE_RATE - timeTakenMillis;
+	               if (timeLeftMillis < 5) timeLeftMillis = 5; 
+
 			} finally
 			{
 				if (c != null)
@@ -46,33 +50,11 @@ public class GameLoopThread extends Thread
 					view.getHolder().unlockCanvasAndPost(c);
 				}
 			}
-			sleeptime = ticksPS - (System.currentTimeMillis()-starttime);
 			try
 			{
-				if(sleeptime>0)
-				{
-					sleep(sleeptime);
-				}
-				else
-				{
-					sleep(10);
-				}
+				Thread.sleep(timeLeftMillis);
 			}
 			catch(Exception e){}
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
 		}
 	}
 

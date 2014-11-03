@@ -9,7 +9,7 @@
 
             <stroke
                 android:width="2dp"
-                android:color="#ffc000" />
+                android:color="#ffff00" />
 
             <solid android:color="#00000000" />
         </shape>
