@@ -1,23 +1,33 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/llmain"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="com.example.multiball.MainActivity" >
+    android:id="@+id/rl1"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <ImageView
+        android:id="@+id/bgimage"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_x="0dp"
+        android:layout_y="0dp" />
 
     <LinearLayout
-        android:id="@+id/ll_hor"
+        android:id="@+id/llmain"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.27"
-        android:background="@drawable/bgscoreboard"
-        android:orientation="horizontal" >
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context="com.example.multiball.MainActivity" >
 
-        
-                
-        
+        <LinearLayout
+            android:id="@+id/ll_hor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
 
+           
+        </LinearLayout>
     </LinearLayout>
 
-</LinearLayout>
+   
+</RelativeLayout>

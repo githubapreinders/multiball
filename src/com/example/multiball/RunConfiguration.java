@@ -13,6 +13,7 @@ public class RunConfiguration
 	public JBall[] jballarray;
 	public JBall jball;
 	public GameView gameview;
+	public  float SPEEDFACTOR;
 	public float speed;
 	public int angleInDegree;
 	public HashMap<Integer, Integer> bigballs = new HashMap<Integer, Integer>();
@@ -21,8 +22,9 @@ public class RunConfiguration
 	public RunConfiguration(int whichconfiguration, GameView gameview)
 	{
 		this.gameview = gameview;
+		this.SPEEDFACTOR = 2.0f;
 		gameview.box = new ContainerBox(0, 0, gameview.display.getWidth(), gameview.display.getHeight()
-				- gameview.main.tv1.getHeight());
+				- gameview.main.tv2.getHeight());
 		
 		if(gameview.display.getWidth()<900){
 		bigballs.put(1, R.drawable.circle1_ll);
@@ -34,7 +36,7 @@ public class RunConfiguration
 		bigballs.put(7, R.drawable.circle7_ll);
 		bigballs.put(8, R.drawable.circle8_ll);
 		bigballs.put(9, R.drawable.circle9_ll);
-		bigballs.put(0, R.drawable.circle0_ll);
+		bigballs.put(10, R.drawable.circle10_ll);
 
 		smallballs.put(1, R.drawable.circle1_llsm);
 		smallballs.put(2, R.drawable.circle2_llsm);
@@ -45,7 +47,7 @@ public class RunConfiguration
 		smallballs.put(7, R.drawable.circle7_llsm);
 		smallballs.put(8, R.drawable.circle8_llsm);
 		smallballs.put(9, R.drawable.circle9_llsm);
-		smallballs.put(0, R.drawable.circle0_llsm);
+		smallballs.put(10, R.drawable.circle10_llsm);
 		}
 
 		else
@@ -59,7 +61,7 @@ public class RunConfiguration
 			bigballs.put(7, R.drawable.circle7_ll_bigger);
 			bigballs.put(8, R.drawable.circle8_ll_bigger);
 			bigballs.put(9, R.drawable.circle9_ll_bigger);
-			bigballs.put(0, R.drawable.circle0_ll_bigger);
+			bigballs.put(10, R.drawable.circle10_ll_bigger);
 
 			smallballs.put(1, R.drawable.circle1_ll);
 			smallballs.put(2, R.drawable.circle2_ll);
@@ -70,7 +72,7 @@ public class RunConfiguration
 			smallballs.put(7, R.drawable.circle7_ll);
 			smallballs.put(8, R.drawable.circle8_ll);
 			smallballs.put(9, R.drawable.circle9_ll);
-			smallballs.put(0, R.drawable.circle0_ll);
+			smallballs.put(10, R.drawable.circle10_ll);
 		}
 		
 		
@@ -78,30 +80,22 @@ public class RunConfiguration
 		switch (whichconfiguration)
 		{
 		default:
-			jballarray = new JBall[10];
+			jballarray = new JBall[smallballs.size()];
 			for (int i = 0; i < jballarray.length; i++)
 			{
-				speed = ran.nextFloat() * 1.0f;
+				speed = ran.nextFloat() * 2.0f;
 				angleInDegree = ran.nextInt(360);
-				jballarray[i] = createJBall(i, bigballs.get(i));
+				jballarray[i] = createJBall(i+1, smallballs.get(i+1));
 				jballarray[i].setSpeeds(speed, angleInDegree);
 			}
-//			jballarray = new JBall[10];
-//			for (int i = 0; i < jballarray.length; i++)
-//			{
-//				speed = ran.nextFloat() * 1.0f;
-//				angleInDegree = ran.nextInt(360);
-//				jballarray[i] = createJBall(i, smallballs.get(i));
-//				jballarray[i].setSpeeds(speed, angleInDegree);
-//			}
 			break;
 
 		case 1:
-			jballarray = new JBall[10];
+			jballarray = new JBall[bigballs.size()];
 						
 			for (int i = 0; i < jballarray.length; i++)
 			{
-				jballarray[i] = createJBall(i, bigballs.get(i));
+				jballarray[i] = createJBall(i+1, bigballs.get(i+1));
 			}
 			int width = gameview.display.getWidth();
 			int height = gameview.display.getHeight() - gameview.main.getLl_hor().getHeight();

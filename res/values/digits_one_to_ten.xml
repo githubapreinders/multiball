@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string-array name="digits_one_to_ten">
+        <item>één</item>
+        <item>twee</item>
+        <item>drie</item>
+        <item>vier</item>
+        <item>vijf</item>
+        <item>zes</item>
+        <item>zeven</item>
+        <item>acht</item>
+        <item>negen</item>
+        <item>tien</item>
+    </string-array>
+</resources>

@@ -10,24 +10,33 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.os.AsyncTask;
+import android.speech.tts.TextToSpeech;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.TextView;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import aurelienribon.tweenengine.TweenManager;
 
 public class GameView extends SurfaceView
 {
-
+	float currentBgX;
+	long lastTimeBg;
+	private TweenManager manager;
+	private Bitmap bgimage;
+	private Animation mAnim;
+	private ImageView mImageView;
+	private Paint p;
 	private static final float EPSILON_TIME = 1e-2f;
 	private String TAG = "In GameView";
 	public List<Tempball> temps;
@@ -35,14 +44,14 @@ public class GameView extends SurfaceView
 	private Context context;
 	private SurfaceHolder holder;
 	public GameLoopThread gameloopthread;
-	private Ball ball;
 	public Bitmap collision;
-	public HashMap<Integer, Ball> balls;
 	public HashMap<Integer, JBall> jballs;
 	private long lastClick;
 	public HashMap<Integer, Point> ballpositions;
 	public boolean ballscreated;
 	public Display display;
+	private int screenwidth;
+	private int screenheight;
 	public MainActivity main;
 	private String userinput;
 	public ContainerBox box;
@@ -57,6 +66,12 @@ public class GameView extends SurfaceView
 	public static final int sound5 = R.raw.pop5d;
 	public static SoundPool soundpool;
 	public static HashMap soundpoolmap;
+	public Bitmap[] bganimation = new Bitmap[5];
+	int bganimationcounter;
+	int counter = 0;
+	int flag = 0;
+	private Drawable bgdrawable;
+	private RunConfiguration rc;
 
 	public GameView(Context context, MainActivity main)
 	{
@@ -67,8 +82,10 @@ public class GameView extends SurfaceView
 		this.box = null;
 		this.jballarray = new JBall[10];
 		this.userinput = ((MultiBall) main.getApplication()).getUserinput();
+
 		gameloopthread = new GameLoopThread(this);
-		balls = new HashMap<Integer, Ball>();
+		((MultiBall) main.getApplication()).setGameloopthread(gameloopthread);
+		gameloopthread.onPause();
 		jballs = new HashMap<Integer, JBall>();
 		ballpositions = new HashMap<Integer, Point>();
 		holder = getHolder();
@@ -92,12 +109,13 @@ public class GameView extends SurfaceView
 				}
 			}
 
+			@SuppressWarnings("deprecation")
 			@Override
 			public void surfaceCreated(SurfaceHolder holder)
 			{
-				// createBalls();
-
-				RunConfiguration rc = new RunConfiguration(runconfiguration, GameView.this);
+				currentBgX = screenwidth;
+				lastTimeBg = System.currentTimeMillis();
+				rc = new RunConfiguration(runconfiguration, GameView.this);
 				jballarray = rc.getJballarray();
 				gameloopthread.setRunning(true);
 				gameloopthread.start();
@@ -111,6 +129,11 @@ public class GameView extends SurfaceView
 		});
 		WindowManager wm = (WindowManager) (context.getSystemService("window"));
 		display = wm.getDefaultDisplay();
+		this.screenwidth = display.getWidth();
+		this.screenheight = display.getHeight();
+
+		bgdrawable = getResources().getDrawable(R.drawable.background_animation4);
+		bgimage = drawableToBitmap(getResources().getDrawable(R.drawable.background_animation3));
 
 		Drawable d = getResources().getDrawable(R.drawable.circle1);
 		collision = Bitmap.createBitmap(d.getIntrinsicWidth(), d.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
@@ -118,8 +141,34 @@ public class GameView extends SurfaceView
 		d.draw(new Canvas(collision));
 		temps = new ArrayList<Tempball>();
 
+		bganimation[0] = drawableToBitmap(main.getResources().getDrawable(R.drawable.background_animation1));
+		bganimation[1] = drawableToBitmap(main.getResources().getDrawable(R.drawable.background_animation2));
+		bganimation[2] = drawableToBitmap(main.getResources().getDrawable(R.drawable.background_animation3));
+		bganimation[3] = drawableToBitmap(main.getResources().getDrawable(R.drawable.background_animation4));
+		bganimation[4] = drawableToBitmap(main.getResources().getDrawable(R.drawable.background_animation5));
+		p = new Paint();
+
 		initSounds(context);
 
+	}
+
+	public void setRunconfiguration()
+	{
+		this.runconfiguration = ((MultiBall) main.getApplication()).getRunconfiguration();
+		rc = new RunConfiguration(runconfiguration, GameView.this);
+		jballarray = rc.getJballarray();
+
+		try
+		{
+			main.image1.setEnabled(true);
+			main.image2.setEnabled(true);
+			main.image3.setEnabled(true);
+			main.image4.setEnabled(true);
+			main.img1.setEnabled(true);
+		} catch (NullPointerException e)
+		{
+
+		}
 	}
 
 	public static void initSounds(Context context)
@@ -178,6 +227,7 @@ public class GameView extends SurfaceView
 							main.tv2.setTypeface(null, Typeface.BOLD);
 							main.tv2.setGravity(Gravity.CENTER);
 							main.tv2.setText(userinput);
+							checkAnswer(Integer.parseInt(userinput));
 						}
 					});
 
@@ -185,6 +235,52 @@ public class GameView extends SurfaceView
 			}
 		}
 		return true;
+	}
+
+	private void checkAnswer(int input)
+	{
+		Opgave opg = gameloopthread.getOpgave();
+		int answer = opg.getCorrectanswer();
+		int numofdigits = (int) Math.log10(answer) + 1;
+
+		if (numofdigits == 1)
+		{
+			gameloopthread.getOpgave().setUseranser(input);
+			gameloopthread.setAnswergiven(true);
+			if (Integer.parseInt((String) main.tv2.getText()) == answer)
+			{
+				soundpool.play((int) soundpoolmap.get(sound2), volume, volume, 1, 0, 1f);
+			}
+			((MultiBall) main.getApplication()).setUserinput("");
+		}
+		if (numofdigits == 2)
+		{
+			switch (flag)
+			{
+			case 0:
+				if (Integer.parseInt((String) main.tv2.getText()) == answer)
+				{
+					gameloopthread.getOpgave().setUseranser(input);
+					gameloopthread.setAnswergiven(true);
+					soundpool.play((int) soundpoolmap.get(sound2), volume, volume, 1, 0, 1f);
+					((MultiBall) main.getApplication()).setUserinput("");
+					flag = 0;
+					break;
+				}
+				flag = 1;
+				break;
+			case 1:
+				gameloopthread.getOpgave().setUseranser(input);
+				gameloopthread.setAnswergiven(true);
+				if (Integer.parseInt((String) main.tv2.getText()) == answer)
+				{
+					soundpool.play((int) soundpoolmap.get(sound2), volume, volume, 1, 0, 1f);
+				}
+				((MultiBall) main.getApplication()).setUserinput("");
+				flag = 0;
+				break;
+			}
+		}
 	}
 
 	private JBall createJBall(int resid, int ballnumber)
@@ -195,7 +291,7 @@ public class GameView extends SurfaceView
 		d.draw(new Canvas(bmp));
 		Random ran = new Random();
 		int angleInDegree = ran.nextInt(360);
-		float speed = ran.nextFloat() * 1.0f;
+		float speed = ran.nextFloat() * (rc.SPEEDFACTOR);
 
 		float x;
 		float y;
@@ -230,17 +326,41 @@ public class GameView extends SurfaceView
 	@Override
 	protected void onDraw(Canvas canvas)
 	{
-		canvas.drawColor(Color.BLACK);
 
+		if (System.currentTimeMillis() - lastTimeBg > 30000)
+		{
+			currentBgX -= 2;
+			lastTimeBg = System.currentTimeMillis();
+		}
+		if (currentBgX == (0))
+		{
+			currentBgX = screenwidth;
+		}
+		//
+		canvas.drawColor(Color.BLACK);
+		// bgdrawable.draw(canvas);
+		// canvas.drawBitmap(bgimage, 0 - (screenwidth - currentBgX), 0, null);
+
+		// canvas.drawBitmap(bgimage, currentBgX, 200, null);
+		// canvas.drawBitmap(bgimage, 0, 0,null);
 		for (int i = 0; i < jballarray.length; i++)
 		{
 			jballarray[i].onDraw(canvas);
 		}
 		for (int i = temps.size() - 1; i >= 0; i--)
 		{
-			temps.get(i).onDraw(canvas);
+			// temps.get(i).onDraw(canvas);
 		}
 
+	}
+
+	public Bitmap drawableToBitmap(Drawable drawable)
+	{
+		Bitmap b = Bitmap.createBitmap(screenwidth, screenheight, Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas(b);
+		drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+		drawable.draw(canvas);
+		return b;
 	}
 
 	public void updateBalls2()
